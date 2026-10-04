@@ -1,5 +1,10 @@
 name: Publish already verified artifacts
 on:
+  workflow_call:
+    inputs:
+      checked_run_id:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       checked_run_id:
