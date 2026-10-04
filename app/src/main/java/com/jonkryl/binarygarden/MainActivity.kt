@@ -94,12 +94,20 @@ class MainActivity : Activity() {
         generate(if(isDaily)8 else 6,if(isDaily)day().replace("-","").toLong() else System.currentTimeMillis(),isDaily)
     }
     private fun chooseNew() {
-        AlertDialog.Builder(this).setTitle(R.string.choose_size).setItems(arrayOf(getString(R.string.size_6),getString(R.string.size_8))) {_,which->
-            fun start(){generate(if(which==0)6 else 8,System.currentTimeMillis(),false)}
-            val existing=prefs.getString(key(false),null)?.let{GameState.decode(it)}
-            if(existing!=null && !existing.won)AlertDialog.Builder(this).setTitle(R.string.new_game).setMessage(R.string.replace_game)
-                .setPositiveButton(R.string.start){_,_->start()}.setNegativeButton(android.R.string.cancel,null).show() else start()
-        }.show()
+        AlertDialog.Builder(this).setTitle(R.string.choose_size)
+            .setItems(arrayOf(getString(R.string.size_6),getString(R.string.size_8))) {dialog,which ->
+                afterMenu(dialog) {
+                    fun start(){generate(if(which==0)6 else 8,System.currentTimeMillis(),false)}
+                    val existing=prefs.getString(key(false),null)?.let{GameState.decode(it)}
+                    if(existing!=null && !existing.won)AlertDialog.Builder(this).setTitle(R.string.new_game).setMessage(R.string.replace_game)
+                        .setPositiveButton(R.string.start){_,_->start()}.setNegativeButton(android.R.string.cancel,null).show() else start()
+                }
+            }.show()
+    }
+    // Close the originating window before opening another; Android 16 otherwise loses dialog focus.
+    private fun afterMenu(dialog:android.content.DialogInterface,action:()->Unit) {
+        dialog.dismiss()
+        page.post { if(!isFinishing && !isDestroyed)action() }
     }
     private fun generate(size:Int,seed:Long,isDaily:Boolean) {
         if(loading)return
@@ -174,10 +182,12 @@ class MainActivity : Activity() {
     }
     private fun rules()=AlertDialog.Builder(this).setTitle(R.string.rules).setMessage(R.string.rules_text).setPositiveButton(android.R.string.ok,null).show()
     private fun more() {
-        AlertDialog.Builder(this).setTitle(R.string.more).setItems(arrayOf(getString(R.string.statistics),getString(R.string.ad_privacy_title),getString(R.string.ad_policy),getString(R.string.support))) {_,index->
-            when(index){0->AlertDialog.Builder(this).setTitle(R.string.statistics).setMessage(getString(R.string.statistics_text,prefs.getInt("solved",0),prefs.getInt("unassisted",0))).setPositiveButton(android.R.string.ok,null).show()
-                1->ad.showPrivacyChoice();2->open(Intent(Intent.ACTION_VIEW,Uri.parse(BuildConfig.PRIVACY_POLICY_URL)))
-                3->open(Intent(Intent.ACTION_SENDTO,Uri.parse("mailto:jonkryl@gmail.com")).putExtra(Intent.EXTRA_SUBJECT,"Binary Garden ${BuildConfig.VERSION_NAME}"))}
+        AlertDialog.Builder(this).setTitle(R.string.more).setItems(arrayOf(getString(R.string.statistics),getString(R.string.ad_privacy_title),getString(R.string.ad_policy),getString(R.string.support))) {dialog,index ->
+            afterMenu(dialog) {
+                when(index){0->AlertDialog.Builder(this).setTitle(R.string.statistics).setMessage(getString(R.string.statistics_text,prefs.getInt("solved",0),prefs.getInt("unassisted",0))).setPositiveButton(android.R.string.ok,null).show()
+                    1->ad.showPrivacyChoice();2->open(Intent(Intent.ACTION_VIEW,Uri.parse(BuildConfig.PRIVACY_POLICY_URL)))
+                    3->open(Intent(Intent.ACTION_SENDTO,Uri.parse("mailto:jonkryl@gmail.com")).putExtra(Intent.EXTRA_SUBJECT,"Binary Garden ${BuildConfig.VERSION_NAME}"))}
+            }
         }.show()
     }
     private fun open(intent:Intent){try{startActivity(intent)}catch(_:ActivityNotFoundException){Toast.makeText(this,R.string.ad_no_browser,Toast.LENGTH_LONG).show()}}
