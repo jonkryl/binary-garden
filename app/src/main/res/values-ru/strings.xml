@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Двоичный сад</string>
+    <string name="tagline">Спокойная головоломка из нулей и единиц</string>
+    <string name="loading">Выращиваем новое поле…</string>
+    <string name="new_game">Новое поле</string>
+    <string name="daily">Задача дня</string>
+    <string name="free_play">Свободная игра</string>
+    <string name="choose_size">Выберите поле</string>
+    <string name="size_6">6 × 6 — короткий перерыв</string>
+    <string name="size_8">8 × 8 — задача посложнее</string>
+    <string name="replace_game">Незавершённое поле свободной игры будет заменено. Задача дня останется сохранённой.</string>
+    <string name="start">Начать</string>
+    <string name="generation_error">Не удалось создать поле. Прежний прогресс сохранён; попробуйте ещё раз.</string>
+    <string name="save_error">Не удалось сохранить прогресс. Освободите память устройства перед созданием нового поля.</string>
+    <string name="daily_mode">Задача дня · %1$s · UTC</string>
+    <string name="free_mode">Свободная игра · %1$d × %2$d</string>
+    <string name="progress">Заполнено %1$d/%2$d · Ходов %3$d</string>
+    <string name="undo">Отмена</string>
+    <string name="hint">Подсказка</string>
+    <string name="check">Проверить</string>
+    <string name="rules">Правила</string>
+    <string name="more">Ещё</string>
+    <string name="local_save">Каждый ход сохраняется на устройстве. На узком экране поле можно прокрутить вбок.</string>
+    <string name="cell_description">Строка %1$d, столбец %2$d, %3$s, %4$s</string>
+    <string name="empty">пусто</string>
+    <string name="fixed">исходная клетка</string>
+    <string name="editable">нажмите: 0, 1, пусто</string>
+    <string name="won">Сад заполнен!</string>
+    <string name="tap_help">Нажмите пустую клетку: 0 → 1 → пусто. Тёмно-зелёные клетки заданы заранее.</string>
+    <string name="win_stats">Решено за %1$d ходов с %2$d подсказками. Поле и статистика сохранены.</string>
+    <string name="continue_game">Продолжить</string>
+    <string name="no_errors">Ошибок пока нет. Продолжайте!</string>
+    <string name="errors">Неверных клеток: %1$d. Исправьте выделенные клетки или отмените ход.</string>
+    <string name="fix_errors">Исправьте выделенные клетки перед логической подсказкой.</string>
+    <string name="hint_explanation">Строка %1$d, столбец %2$d: здесь должно быть %3$d. Все допустимые заполнения %4$s %5$d дают это значение: нужны равное количество символов, отсутствие трёх одинаковых соседей и отличие от заполненных линий.</string>
+    <string name="row">строки</string>
+    <string name="column">столбца</string>
+    <string name="apply_hint">Применить шаг</string>
+    <string name="rules_text">Заполните каждую клетку нулём или единицей.
+
+1. Ни по горизонтали, ни по вертикали не бывает трёх одинаковых символов подряд.
+2. В каждой строке и столбце поровну нулей и единиц.
+3. Строки и столбцы не повторяются.
+
+Нажимайте редактируемую клетку: 0 → 1 → пусто. Тёмно-зелёные исходные клетки менять нельзя. Отмена возвращает ход. Проверка выделяет неверные клетки. Подсказка объясняет обязательный логический шаг до его применения.
+
+Свободное поле и задача дня сохраняются отдельно. Задача дня меняется в полночь UTC.</string>
+    <string name="statistics">Статистика</string>
+    <string name="statistics_text">Решено полей: %1$d
+Без подсказок: %2$d
+
+Повторное завершение того же поля не учитывается. Статистика хранится на устройстве.</string>
+    <string name="support">Связаться с поддержкой</string>
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Binary Garden</string>
+    <string name="tagline">A quiet puzzle of zeros and ones</string>
+    <string name="loading">Growing a new puzzle…</string>
+    <string name="new_game">New puzzle</string>
+    <string name="daily">Daily puzzle</string>
+    <string name="free_play">Free play</string>
+    <string name="choose_size">Choose a grid</string>
+    <string name="size_6">6 × 6 — a short break</string>
+    <string name="size_8">8 × 8 — a deeper challenge</string>
+    <string name="replace_game">Your unfinished free-play puzzle will be replaced. The daily puzzle stays saved.</string>
+    <string name="start">Start</string>
+    <string name="generation_error">Could not create a puzzle. Your previous progress is still saved; try again.</string>
+    <string name="save_error">Could not save your progress. Free some device storage before starting a new puzzle.</string>
+    <string name="daily_mode">Daily · %1$s · UTC</string>
+    <string name="free_mode">Free play · %1$d × %2$d</string>
+    <string name="progress">Filled %1$d/%2$d · Moves %3$d</string>
+    <string name="undo">Undo</string>
+    <string name="hint">Hint</string>
+    <string name="check">Check</string>
+    <string name="rules">Rules</string>
+    <string name="more">More</string>
+    <string name="local_save">Every move stays on this device. Swipe the grid sideways on narrow screens.</string>
+    <string name="cell_description">Row %1$d, column %2$d, %3$s, %4$s</string>
+    <string name="empty">empty</string>
+    <string name="fixed">given clue</string>
+    <string name="editable">tap to cycle 0, 1, empty</string>
+    <string name="won">Garden complete!</string>
+    <string name="tap_help">Tap an empty square: 0 → 1 → empty. Dark green squares are given clues.</string>
+    <string name="win_stats">Solved in %1$d moves with %2$d hints. Your puzzle and statistics are saved.</string>
+    <string name="continue_game">Continue</string>
+    <string name="no_errors">No mistakes so far. Keep going!</string>
+    <string name="errors">%1$d incorrect squares highlighted. Tap to correct them or undo.</string>
+    <string name="fix_errors">Correct the highlighted squares before asking for a logical hint.</string>
+    <string name="hint_explanation">Row %1$d, column %2$d must be %3$d. Every legal completion of %4$s %5$d has this value: it must be balanced, contain no three identical neighbours, and differ from completed lines.</string>
+    <string name="row">row</string>
+    <string name="column">column</string>
+    <string name="apply_hint">Apply this step</string>
+    <string name="rules_text">Fill every square with 0 or 1.
+
+1. No three equal symbols next to each other horizontally or vertically.
+2. Each row and column contains equal numbers of 0s and 1s.
+3. No two rows or two columns are identical.
+
+Tap an editable square to cycle 0 → 1 → empty. Dark green clues stay fixed. Undo reverses a move. Check highlights incorrect entries. A hint explains a forced logical step before applying it.
+
+Free play and the daily puzzle save separately. The daily grid changes at midnight UTC.</string>
+    <string name="statistics">Statistics</string>
+    <string name="statistics_text">Puzzles completed: %1$d
+Without hints: %2$d
+
+Finishing the same puzzle again does not count twice. All statistics stay on this device.</string>
+    <string name="support">Contact support</string>
+</resources>
