@@ -198,20 +198,9 @@ jobs:
   publish:
     name: Publish verified downloadable release after actual device checks
     needs: [signed, release-device]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    uses: ./.github/workflows/publish-artifacts.yml
     permissions:
       contents: write
-    steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: signed-release
-          path: release-files
-      - name: Publish original APK/AAB and public verification proof
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION_NAME: ${{ inputs.version_name }}
-          VERSION_CODE: ${{ inputs.version_code }}
-          SOURCE_SHA: ${{ inputs.source_ref }}
-        run: |
-          gh release create "v${VERSION_NAME}-${VERSION_CODE}" release-files/release-output/* --repo "$GITHUB_REPOSITORY" --target "$SOURCE_SHA" --title "Binary Garden ${VERSION_NAME} (${VERSION_CODE})" --notes 'Original Binary Garden game. Signed minified APK/AAB, actual Android 7/Android 16 (16 KB pages) UI and persistence checks, RU/EN, contextual Yandex banner by default. Google Play publication and RSYA paid activation are separate external states.'
+      actions: read
+    with:
+      checked_run_id: ${{ github.run_id }}
