@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.matcher.RootMatchers.isDialog
 import androidx.test.espresso.matcher.ViewMatchers.withId
 import com.jonkryl.binarygarden.core.GameState
 import org.junit.Assert.*
@@ -40,11 +41,11 @@ class GardenJourneyTest {
     @Test fun rulesAndBothPrivacyChoicesKeepAdvertisingContainer() {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             ready();onView(withId(R.id.rules)).perform(scrollTo(),click())
-            onView(androidx.test.espresso.matcher.ViewMatchers.withText(android.R.string.ok)).perform(click())
+            onView(androidx.test.espresso.matcher.ViewMatchers.withText(android.R.string.ok)).inRoot(isDialog()).perform(click())
             for(choice in listOf(true,false)) {
                 onView(withId(R.id.more)).perform(scrollTo(),click())
-                onView(androidx.test.espresso.matcher.ViewMatchers.withText(context.getString(R.string.ad_privacy_title))).perform(click())
-                onView(androidx.test.espresso.matcher.ViewMatchers.withText(context.getString(if(choice)R.string.ad_allow_personalization else R.string.ad_contextual))).perform(click())
+                onView(androidx.test.espresso.matcher.ViewMatchers.withText(context.getString(R.string.ad_privacy_title))).inRoot(isDialog()).perform(click())
+                onView(androidx.test.espresso.matcher.ViewMatchers.withText(context.getString(if(choice)R.string.ad_allow_personalization else R.string.ad_contextual))).inRoot(isDialog()).perform(click())
                 assertEquals(choice,context.getSharedPreferences("ad_privacy",0).getBoolean("personalized",!choice))
             }
             scenario.onActivity {a -> assertEquals(android.view.View.VISIBLE,a.findViewById<android.view.View>(R.id.ad_host).visibility)}
