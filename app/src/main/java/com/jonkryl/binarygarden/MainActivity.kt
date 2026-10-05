@@ -34,6 +34,9 @@ class MainActivity : Activity() {
     private var game: GameState? = null
     private var loading = false
     private var highlighted = emptySet<Int>()
+    private val saveFeedback = SaveFeedback()
+    private var statusMessage = ""
+    private var pendingModeSelection: Boolean? = null
     private val prefs by lazy { getSharedPreferences("garden",MODE_PRIVATE) }
     private val cellIds=intArrayOf(R.id.cell_0,R.id.cell_1,R.id.cell_2,R.id.cell_3,R.id.cell_4,R.id.cell_5,R.id.cell_6,R.id.cell_7,R.id.cell_8,R.id.cell_9,R.id.cell_10,R.id.cell_11,R.id.cell_12,R.id.cell_13,R.id.cell_14,R.id.cell_15,R.id.cell_16,R.id.cell_17,R.id.cell_18,R.id.cell_19,R.id.cell_20,R.id.cell_21,R.id.cell_22,R.id.cell_23,R.id.cell_24,R.id.cell_25,R.id.cell_26,R.id.cell_27,R.id.cell_28,R.id.cell_29,R.id.cell_30,R.id.cell_31,R.id.cell_32,R.id.cell_33,R.id.cell_34,R.id.cell_35,R.id.cell_36,R.id.cell_37,R.id.cell_38,R.id.cell_39,R.id.cell_40,R.id.cell_41,R.id.cell_42,R.id.cell_43,R.id.cell_44,R.id.cell_45,R.id.cell_46,R.id.cell_47,R.id.cell_48,R.id.cell_49,R.id.cell_50,R.id.cell_51,R.id.cell_52,R.id.cell_53,R.id.cell_54,R.id.cell_55,R.id.cell_56,R.id.cell_57,R.id.cell_58,R.id.cell_59,R.id.cell_60,R.id.cell_61,R.id.cell_62,R.id.cell_63)
     private val buttons = mutableListOf<Button>()
@@ -64,7 +67,8 @@ class MainActivity : Activity() {
         val boardScroll=HorizontalScrollView(this).apply {isHorizontalScrollBarEnabled=true}
         grid=GridLayout(this).apply {id=R.id.board;setPadding(0,dp(8),0,dp(8))}
         boardScroll.addView(grid);page.addView(boardScroll)
-        status=label(getString(R.string.loading),16f).apply {id=R.id.status;accessibilityLiveRegion=View.ACCESSIBILITY_LIVE_REGION_POLITE;setPadding(0,dp(8),0,dp(8))};page.addView(status)
+        status=label("",16f).apply {id=R.id.status;accessibilityLiveRegion=View.ACCESSIBILITY_LIVE_REGION_POLITE;setPadding(0,dp(8),0,dp(8))};page.addView(status)
+        showStatus(R.string.loading)
         val actions=LinearLayout(this).apply {orientation=LinearLayout.HORIZONTAL}
         undo=button(R.string.undo,R.id.undo) {game?.let {if(it.undo()){highlighted=emptySet();save();render()}}}
         hint=button(R.string.hint,R.id.hint){showHint()};check=button(R.string.check,R.id.check){checkBoard()}
@@ -88,7 +92,7 @@ class MainActivity : Activity() {
     }
     private fun switchMode(isDaily:Boolean) {
         if(loading)return
-        save();prefs.edit().putBoolean("daily_selected",isDaily).commit()
+        save(isDaily)
         val stored=prefs.getString(key(isDaily),null)?.let{GameState.decode(it)}
         if(stored!=null && (!isDaily || stored.day==day())) {game=stored;highlighted=emptySet();render();return}
         generate(if(isDaily)8 else 6,if(isDaily)day().replace("-","").toLong() else System.currentTimeMillis(),isDaily)
@@ -111,24 +115,40 @@ class MainActivity : Activity() {
     }
     private fun generate(size:Int,seed:Long,isDaily:Boolean) {
         if(loading)return
-        save();loading=true;status.setText(R.string.loading);enable(false)
+        save();loading=true;showStatus(R.string.loading);enable(false)
         val date=if(isDaily)day()else ""
         background.execute {
             val result=runCatching {GameState(PuzzleGenerator.generate(size,seed),isDaily,date)}
             runOnUiThread {
                 if(isFinishing||isDestroyed)return@runOnUiThread
                 loading=false;enable(true)
-                result.onSuccess {game=it;highlighted=emptySet();prefs.edit().putBoolean("daily_selected",isDaily).commit();save();render()}
-                    .onFailure {status.setText(R.string.generation_error)}
+                result.onSuccess {game=it;highlighted=emptySet();save(isDaily);render()}
+                    .onFailure {showStatus(R.string.generation_error)}
             }
         }
     }
     private fun enable(enabled:Boolean){for(b in listOf(normal,daily,undo,hint,check)+buttons)b.isEnabled=enabled}
-    private fun save():Boolean {
-        val g=game?:return true
-        val ok=prefs.edit().putString(key(g.daily),g.encode()).commit()
-        if(!ok && ::status.isInitialized)status.setText(R.string.save_error)
+    private fun save(selectedDaily:Boolean?=null):Boolean {
+        if(selectedDaily!=null)pendingModeSelection=selectedDaily
+        val g=game
+        if(g==null && pendingModeSelection==null)return true
+        val editor=prefs.edit()
+        if(g!=null) {
+            editor.putString(key(g.daily),g.encode())
+            // Retry completion with its snapshot; an existing marker prevents counting the same puzzle twice.
+            if(g.won && !prefs.getBoolean("completed:${g.puzzle.id}",false))editor.putBoolean("completed:${g.puzzle.id}",true)
+                .putInt("solved",prefs.getInt("solved",0)+1).putInt("unassisted",prefs.getInt("unassisted",0)+if(g.hints==0)1 else 0)
+        }
+        pendingModeSelection?.let {editor.putBoolean("daily_selected",it)}
+        val ok=saveFeedback.commit {editor.commit()}
+        if(ok)pendingModeSelection=null
+        if(::status.isInitialized)showStatus(statusMessage)
         return ok
+    }
+    private fun showStatus(message:Int)=showStatus(getString(message))
+    private fun showStatus(message:String) {
+        statusMessage=message
+        status.text=saveFeedback.message(message,getString(R.string.save_error))
     }
     private fun render() {
         val g=game?:return
@@ -155,25 +175,23 @@ class MainActivity : Activity() {
             buttons.add(b);grid.addView(b,GridLayout.LayoutParams().apply {this.width=width-dp(4);height=width-dp(4);setMargins(dp(2),dp(2),dp(2),dp(2))})
         }
         undo.isEnabled=g.history.isNotEmpty() && !loading;hint.isEnabled=!g.won && !loading;check.isEnabled=!g.won && !loading
-        status.text=if(g.won)getString(R.string.won)else getString(R.string.tap_help)
+        showStatus(if(g.won)R.string.won else R.string.tap_help)
     }
     private fun winIfComplete() {
         val g=game?:return
         if(!g.solved()||g.won)return
         g.won=true;save()
-        if(!prefs.getBoolean("completed:${g.puzzle.id}",false))prefs.edit().putBoolean("completed:${g.puzzle.id}",true)
-            .putInt("solved",prefs.getInt("solved",0)+1).putInt("unassisted",prefs.getInt("unassisted",0)+if(g.hints==0)1 else 0).commit()
         render()
         AlertDialog.Builder(this).setTitle(R.string.won).setMessage(getString(R.string.win_stats,g.moves,g.hints))
             .setPositiveButton(R.string.continue_game,null).setNeutralButton(R.string.new_game){_,_->chooseNew()}.show()
     }
     private fun checkBoard() {
         val g=game?:return;highlighted=g.wrong().toSet();render()
-        if(highlighted.isEmpty()) {status.setText(R.string.no_errors);winIfComplete()}else status.text=getString(R.string.errors,highlighted.size)
+        if(highlighted.isEmpty()) {showStatus(R.string.no_errors);winIfComplete()}else showStatus(getString(R.string.errors,highlighted.size))
     }
     private fun showHint() {
         val g=game?:return
-        if(g.wrong().isNotEmpty()){checkBoard();status.setText(R.string.fix_errors);return}
+        if(g.wrong().isNotEmpty()){checkBoard();showStatus(R.string.fix_errors);return}
         val step=Logic.next(g.cells,g.puzzle.size)?:return
         val message=getString(R.string.hint_explanation,step.index/g.puzzle.size+1,step.index%g.puzzle.size+1,step.value,
             getString(if(step.row)R.string.row else R.string.column),step.line+1)
